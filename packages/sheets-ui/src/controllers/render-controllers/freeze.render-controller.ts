@@ -30,7 +30,6 @@ import type {
     ISetWorksheetRowHeightMutationParams,
 } from '@univerjs/sheets';
 import type { Theme } from '@univerjs/themes';
-import type { IViewportScrollState } from '../../services/scroll-manager.service';
 import {
     ColorKit,
     createInterceptorKey,
@@ -70,6 +69,7 @@ import {
     SheetsSelectionsService,
 } from '@univerjs/sheets';
 import { EMPTY, Subscription, switchMap } from 'rxjs';
+import type { IViewportScrollState } from '../../services/scroll-manager.service';
 import { SetColumnHeaderHeightCommand, SetRowHeaderWidthCommand } from '../../commands/commands/headersize-changed.command';
 import { ScrollCommand } from '../../commands/commands/set-scroll.command';
 import { SetZoomRatioOperation } from '../../commands/operations/set-zoom-ratio.operation';
@@ -250,6 +250,8 @@ export class HeaderFreezeRenderController extends Disposable implements IRenderM
                 zIndex: 3,
             });
 
+            this._rowFreezeHeaderRect.viewportCacheReusable = true;
+            this._rowFreezeMainRect.viewportCacheReusable = true;
             scene.addObjects([this._rowFreezeHeaderRect, this._rowFreezeMainRect], SHEET_COMPONENT_HEADER_LAYER_INDEX);
         } else {
             if (freezeColumn === -1 || freezeColumn === 0) {
@@ -281,6 +283,8 @@ export class HeaderFreezeRenderController extends Disposable implements IRenderM
                 zIndex: 3,
             });
 
+            this._columnFreezeHeaderRect.viewportCacheReusable = true;
+            this._columnFreezeMainRect.viewportCacheReusable = true;
             scene.addObjects([this._columnFreezeHeaderRect, this._columnFreezeMainRect], SHEET_COMPONENT_HEADER_LAYER_INDEX);
         }
 

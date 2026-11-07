@@ -93,14 +93,22 @@ vi.mock('@univerjs/engine-render', async (importOriginal) => {
 });
 
 function createCommandService() {
+    const beforeHandlers = new Set<(command: any, options?: any) => void>();
     const handlers = new Set<(command: any, options?: any) => void>();
 
     return {
+        beforeCommandExecuted: vi.fn((handler: (command: any, options?: any) => void) => {
+            beforeHandlers.add(handler);
+            return { dispose: vi.fn(() => beforeHandlers.delete(handler)) };
+        }),
         onCommandExecuted: vi.fn((handler: (command: any, options?: any) => void) => {
             handlers.add(handler);
             return { dispose: vi.fn(() => handlers.delete(handler)) };
         }),
-        emit: (command: any, options?: any) => handlers.forEach((handler) => handler(command, options)),
+        emit: (command: any, options?: any) => {
+            beforeHandlers.forEach((handler) => handler(command, options));
+            handlers.forEach((handler) => handler(command, options));
+        },
     };
 }
 
@@ -115,6 +123,8 @@ function createController() {
         enableLayerCache: vi.fn(),
         attachControl: vi.fn(),
         makeDirty: vi.fn(),
+        setViewportCacheReuseKey: vi.fn(),
+        invalidateViewportCacheReuse: vi.fn(),
         getViewports: vi.fn(function (this: any) {
             return this.__viewports;
         }),
@@ -168,7 +178,10 @@ function createController() {
         context as any,
         { getConfig: vi.fn(() => ({ scrollConfig: { barSize: 8 } })) } as any,
         sheetSkeletonManagerService as any,
-        { checkMutationShouldTriggerRerender: vi.fn((id: string) => id === 'sheet.custom-rerender') } as any,
+        {
+            checkMutationShouldTriggerRerender: vi.fn((id: string) => id === 'sheet.custom-rerender'),
+            shouldAutomaticallyRenderMutation: () => true,
+        } as any,
         commandService as any,
         telemetryService as any
     );
