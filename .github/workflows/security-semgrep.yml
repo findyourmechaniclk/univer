@@ -32,6 +32,14 @@ jobs:
               with:
                   python-version: '3.15'
 
+            - name: Cache pip dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/pip
+                  key: ${{ runner.os }}-pip-semgrep
+                  restore-keys: |
+                    ${{ runner.os }}-pip-semgrep-
+
             - name: Install Semgrep
               id: install-semgrep
               continue-on-error: true
